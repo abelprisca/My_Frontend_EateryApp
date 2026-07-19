@@ -1,3 +1,4 @@
+//create an about page that has a header banner, a visual content split, a number stats grid, and a team members section
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, Compass, Users, Heart } from 'lucide-react';
