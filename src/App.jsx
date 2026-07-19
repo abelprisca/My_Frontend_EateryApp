@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Menu from "./pages/Menu";
 
 
 
@@ -36,6 +37,7 @@ function App() {
     <Route index element={<Home />} />
     <Route path="login" element={<Login />} />
     <Route path="register" element={<Register />} />
+    <Route path="menu" element={<Menu />} />
 
     {/* Protected Routes */}
     <Route element={<ProtectedRoute />}>

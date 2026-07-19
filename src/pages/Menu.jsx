@@ -1,285 +1,656 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Search,
+  ShoppingCart,
+  SlidersHorizontal,
+  Heart,
+  ArrowUpDown,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import API from "../services/api";
+import useCart from "../hooks/useCart";
 
 function Menu() {
+  const { addToCart } = useCart();
+
+  const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Search
+  const [search, setSearch] = useState("");
+
+  // Category
+  const [category, setCategory] = useState("All");
+
+  // Availability
+  const [availability, setAvailability] = useState("All");
+
+  // Dietary
+  const [dietary, setDietary] = useState("All");
+
+  // Sort
+  const [sortBy, setSortBy] = useState("Newest");
+
+  // Price
+  const [priceRange, setPriceRange] = useState(10000);
+
+  // ===============================
+  // Fetch Menu
+  // ===============================
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const response = await API.get("/menu");
+
+        const items = response.data.data.menuItems;
+
+        setMeals(items);
+
+        if (items.length > 0) {
+          const highestPrice = Math.max(
+            ...items.map((item) => item.price)
+          );
+
+          setPriceRange(highestPrice);
+        }
+      } catch (err) {
+        console.log(err);
+        setError("Unable to load menu.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenu();
+  }, []);
+
+  // ===============================
+  // Categories
+  // ===============================
+
+  const categories = useMemo(() => {
+    const list = [
+      "All",
+      ...new Set(meals.map((item) => item.category)),
+    ];
+
+    return list;
+  }, [meals]);
+
+  // ===============================
+  // Dietary
+  // ===============================
+
+  const dietaryOptions = useMemo(() => {
+    const tags = meals.flatMap((item) => item.isDietary);
+
+    return ["All", ...new Set(tags)];
+  }, [meals]);
+
+  // ===============================
+  // Filter Meals
+  // ===============================
+
+  const filteredMeals = useMemo(() => {
+    let data = [...meals];
+
+    // Search
+
+    data = data.filter((meal) => {
+      return (
+        meal.name.toLowerCase().includes(search.toLowerCase()) ||
+        meal.description
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        meal.category
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        meal.isDietary
+          .join(" ")
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
+    });
+
+    // Category
+
+    if (category !== "All") {
+      data = data.filter(
+        (meal) => meal.category === category
+      );
+    }
+
+    // Dietary
+
+    if (dietary !== "All") {
+      data = data.filter((meal) =>
+        meal.isDietary.includes(dietary)
+      );
+    }
+
+    // Availability
+
+    if (availability === "Available") {
+      data = data.filter((meal) => meal.isAvailable);
+    }
+
+    if (availability === "Unavailable") {
+      data = data.filter((meal) => !meal.isAvailable);
+    }
+
+    // Price
+
+    data = data.filter(
+      (meal) => meal.price <= priceRange
+    );
+
+    // Sorting
+
+    switch (sortBy) {
+      case "Price Low":
+        data.sort((a, b) => a.price - b.price);
+        break;
+
+      case "Price High":
+        data.sort((a, b) => b.price - a.price);
+        break;
+
+      case "Name":
+        data.sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+        break;
+
+      default:
+        data.sort(
+          (a, b) =>
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+        );
+    }
+
+    return data;
+  }, [
+    meals,
+    search,
+    category,
+    dietary,
+    availability,
+    priceRange,
+    sortBy,
+  ]);
+
+  // ===============================
+  // Loading
+  // ===============================
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <h2 className="text-xl font-semibold text-gray-500 animate-pulse">
+          Loading delicious meals...
+        </h2>
+      </div>
+    );
+  }
+
+  // ===============================
+  // Error
+  // ===============================
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-red-500 text-xl font-bold">
+          {error}
+        </h2>
+      </div>
+    );
+  }
+
   return (
-    <div>Menu</div>
-  )
+    <div className="bg-gradient-to-b from-white via-pink-50 to-orange-50 min-h-screen">
+
+      {/* HERO */}
+
+      <section className="max-w-7xl mx-auto px-6 pt-12">
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <h1 className="text-5xl font-black text-gray-800">
+            Discover Delicious Meals
+          </h1>
+
+          <p className="mt-4 text-gray-500 max-w-2xl mx-auto">
+            Freshly prepared meals crafted by our chefs.
+            Search, filter and order your favourite meals
+            with ease.
+          </p>
+        </motion.div>
+
+        {/* SEARCH */}
+
+        <div className="relative mb-10">
+
+  <Search
+    size={22}
+    className="absolute left-5 top-1/2 -translate-y-1/2 text-pink-500"
+  />
+
+  <input
+    type="text"
+    placeholder="Search meals, categories, dietary..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="
+      w-full
+      h-14
+      pl-14
+      pr-6
+      rounded-2xl
+      bg-white
+      border-2
+      border-gray-200
+      text-gray-800
+      placeholder:text-gray-400
+      shadow-md
+      transition-all
+      duration-300
+      focus:border-pink-500
+      focus:ring-4
+      focus:ring-pink-200
+      outline-none
+    "
+  />
+
+</div>
+
+        {/* FILTERS */}
+
+        <div className="mt-8 bg-orange-700 rounded-3xl shadow-xl p-6">
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-5 text-orange-700">
+
+            {/* Category */}
+
+            <div>
+
+              <label className="text-sm font-semibold">
+                Category
+              </label>
+
+              <select
+                className="mt-2 w-full border rounded-xl p-3"
+                value={category}
+                onChange={(e) =>
+                  setCategory(e.target.value)
+                }
+              >
+                {categories.map((item) => (
+                  <option
+                    key={item}
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            {/* Dietary */}
+
+            <div>
+
+              <label className="text-sm font-semibold">
+                Dietary
+              </label>
+
+              <select
+                className="mt-2 w-full border rounded-xl p-3"
+                value={dietary}
+                onChange={(e) =>
+                  setDietary(e.target.value)
+                }
+              >
+                {dietaryOptions.map((item) => (
+                  <option
+                    key={item}
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            {/* Availability */}
+
+            <div>
+
+              <label className="text-sm font-semibold">
+                Availability
+              </label>
+
+              <select
+                className="mt-2 w-full border rounded-xl p-3"
+                value={availability}
+                onChange={(e) =>
+                  setAvailability(e.target.value)
+                }
+              >
+                <option>All</option>
+                <option>Available</option>
+                <option>Unavailable</option>
+              </select>
+
+            </div>
+
+            {/* Sort */}
+
+            <div>
+
+              <label className="text-sm font-semibold">
+                Sort By
+              </label>
+
+              <select
+                className="mt-2 w-full border rounded-xl p-3"
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value)
+                }
+              >
+                <option>Newest</option>
+                <option>Price Low</option>
+                <option>Price High</option>
+                <option>Name</option>
+              </select>
+
+            </div>
+
+            {/* Price */}
+
+            <div>
+
+              <label className="text-sm font-semibold">
+                Max Price
+              </label>
+
+              <div className="mt-2">
+
+                <input
+                  type="range"
+                  min="0"
+                  max={
+                    meals.length
+                      ? Math.max(
+                          ...meals.map(
+                            (m) => m.price
+                          )
+                        )
+                      : 10000
+                  }
+                  value={priceRange}
+                  onChange={(e) =>
+                    setPriceRange(Number(e.target.value))
+                  }
+                  className="w-full accent-pink-500"
+                />
+
+                <p className="font-bold text-pink-600 mt-2">
+                  ₦{priceRange.toLocaleString()}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* MENU GRID STARTS IN PART 2 */}
+
+                {/* MENU GRID */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 py-10">
+
+          {filteredMeals.length === 0 ? (
+
+            <div className="col-span-full text-center py-20">
+
+              <h2 className="text-3xl font-bold text-gray-700">
+                No Meals Found
+              </h2>
+
+              <p className="text-gray-500 mt-3">
+                Try changing your search or filters.
+              </p>
+
+            </div>
+
+          ) : (
+
+            filteredMeals.map((meal) => (
+
+              <motion.div
+
+                key={meal._id}
+
+                initial={{ opacity: 0, y: 40 }}
+
+                animate={{ opacity: 1, y: 0 }}
+
+                whileHover={{
+                  y: -12,
+                  scale: 1.02
+                }}
+
+                transition={{
+                  duration: .35
+                }}
+
+                className="group bg-white rounded-[28px] overflow-hidden shadow-lg hover:shadow-2xl border border-pink-100 transition-all duration-500"
+
+              >
+
+                {/* IMAGE */}
+
+                <div className="relative h-72 bg-gradient-to-br from-pink-50 via-orange-50 to-white overflow-hidden">
+
+                  <img
+
+                    src={
+                      meal.image
+                        ? `http://localhost:5000${meal.image}`
+                        : "/default-food.jpg"
+                    }
+
+                    alt={meal.name}
+
+                    className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
+
+                  />
+
+                  {/* CATEGORY */}
+
+                  <span className="absolute left-5 top-5 bg-white/95 backdrop-blur-md text-pink-600 px-4 py-2 rounded-full text-xs font-bold shadow">
+
+                    {meal.category}
+
+                  </span>
+
+                  {/* HEART */}
+
+                  <button
+
+                    className="absolute right-5 top-5 bg-white w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition hover:bg-pink-500 hover:text-white"
+
+                  >
+
+                    <Heart size={18} />
+
+                  </button>
+
+                  {/* AVAILABILITY */}
+
+                  <span
+
+                    className={`absolute bottom-5 left-5 px-4 py-2 rounded-full text-xs font-bold shadow
+
+                    ${meal.isAvailable
+
+                      ? "bg-green-100 text-green-700"
+
+                      : "bg-red-100 text-red-600"
+
+                    }
+
+                    `}
+
+                  >
+
+                    {meal.isAvailable
+
+                      ? "Available"
+
+                      : "Unavailable"}
+
+                  </span>
+
+                </div>
+
+                {/* BODY */}
+
+                <div className="p-6">
+
+                  <div className="flex justify-between items-start">
+
+                    <div>
+
+                      <h2 className="text-2xl font-black text-gray-800">
+
+                        {meal.name}
+
+                      </h2>
+
+                      <p className="text-pink-500 font-bold mt-2 text-xl">
+
+                        ₦{meal.price.toLocaleString()}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                  {/* DESCRIPTION */}
+
+                  <p className="mt-5 text-gray-500 leading-7 line-clamp-2">
+
+                    {meal.description}
+
+                  </p>
+
+                  {/* DIETARY */}
+
+                  <div className="flex flex-wrap gap-2 mt-6">
+
+                    {meal.isDietary.length > 0 ? (
+
+                      meal.isDietary.map((item) => (
+
+                        <span
+
+                          key={item}
+
+                          className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-semibold"
+
+                        >
+
+                          {item}
+
+                        </span>
+
+                      ))
+
+                    ) : (
+
+                      <span className="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">
+
+                        No Dietary Tag
+
+                      </span>
+
+                    )}
+
+                  </div>
+
+                  {/* BUTTONS */}
+
+                  <div className="flex gap-4 mt-8">
+
+                    <button
+
+                      className="flex-1 py-3 rounded-xl border-2 border-pink-500 text-pink-500 font-bold hover:bg-pink-500 hover:text-white transition"
+
+                    >
+
+                      View Details
+
+                    </button>
+
+                    <button
+
+                      disabled={!meal.isAvailable}
+
+                      onClick={() => addToCart(meal)}
+
+                      className={`flex-1 py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition
+
+                      ${meal.isAvailable
+
+                        ? "bg-gradient-to-r from-pink-500 to-orange-500 text-white hover:scale-105"
+
+                        : "bg-gray-300 cursor-not-allowed"
+
+                      }
+
+                      `}
+
+                    >
+
+                      <ShoppingCart size={18} />
+
+                      Add
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </motion.div>
+
+            ))
+
+          )}
+
+        </div>
+
+      </section>
+
+    </div>
+
+  );
+
 }
 
-export default Menu
-
-// import React, { useState, useEffect } from 'react';
-// import { Link } from "react-router-dom";
-// import useCart from '../hooks/useCart';
-// import useAuth from '../hooks/useAuth';
-// import apiClient, { mockApi } from '../services/api';
-// import { Search, Star, Heart, ShoppingCart, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
-// import { motion, AnimatePresence } from 'framer-motion';
-// import AnimatedCard from '../components/ui/AnimatedCard';
-// import SkeletonLoader from '../components/ui/SkeletonLoader';
-// import EmptyState from '../components/ui/EmptyState';
-
-// export const Menu = () => {
-//   const { addToCart } = useCart();
-//   const { isAuthenticated } = useAuth();
-  
-//   const [meals, setMeals] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [selectedCategory, setSelectedCategory] = useState('All');
-//   const [maxPrice, setMaxPrice] = useState(25);
-//   const [sortBy, setSortBy] = useState('popularity'); // popularity, price_asc, price_desc, name
-  
-//   // Favorites list saved in local storage
-//   const [favorites, setFavorites] = useState(() => {
-//     const saved = localStorage.getItem('eatery_favorites');
-//     return saved ? JSON.parse(saved) : [];
-//   });
-
-//   useEffect(() => {
-//     const fetchMenu = async () => {
-//       try {
-//         /*
-//         // ====================================================
-//         // PRODUCTION API CALL (AXIOS INTEGRATION)
-//         // ====================================================
-//         // To use your live backend, uncomment the code below:
-//         //
-//         // const response = await apiClient.get('/meals');
-//         // setMeals(response.data);
-//         // ====================================================
-//         */
-
-//         const data = await mockApi.meals.getAll();
-//         setMeals(data);
-//       } catch (err) {
-//         console.error('Failed to load menu:', err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchMenu();
-//   }, []);
-
-//   useEffect(() => {
-//     localStorage.setItem('eatery_favorites', JSON.stringify(favorites));
-//   }, [favorites]);
-
-//   const toggleFavorite = (mealId) => {
-//     setFavorites(prev => {
-//       if (prev.includes(mealId)) {
-//         return prev.filter(id => id !== mealId);
-//       } else {
-//         return [...prev, mealId];
-//       }
-//     });
-//   };
-
-//   // Categories list extracted from meals
-//   const categories = ['All', ...new Set(meals.map(m => m.category))];
-
-//   // Filtering Logic
-//   const filteredMeals = meals.filter(meal => {
-//     const matchesSearch = 
-//       meal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       meal.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       meal.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-//     const matchesCategory = selectedCategory === 'All' || meal.category === selectedCategory;
-//     const matchesPrice = meal.price <= maxPrice;
-
-//     return matchesSearch && matchesCategory && matchesPrice;
-//   });
-
-//   // Sorting Logic
-//   const sortedMeals = [...filteredMeals].sort((a, b) => {
-//     if (sortBy === 'popularity') return b.rating - a.rating;
-//     if (sortBy === 'price_asc') return a.price - b.price;
-//     if (sortBy === 'price_desc') return b.price - a.price;
-//     if (sortBy === 'name') return a.name.localeCompare(b.name);
-//     return 0;
-//   });
-
-//   return (
-//     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-10">
-//       {/* Page Header */}
-//       <div className="text-center flex flex-col gap-3">
-//         <span className="text-xs font-bold uppercase tracking-wider text-[#FF4D6D]">Fresh & Delicious</span>
-//         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Explore Our Premium Menu</h1>
-//         <div className="w-12 h-1 bg-[#FF4D6D] mx-auto rounded-full"></div>
-//       </div>
-
-//       {/* Search and Filters Controls */}
-//       <section className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-5">
-//         {/* Search Bar */}
-//         <div className="relative w-full">
-//           <Search className="absolute inset-y-0 left-4 my-auto w-5 h-5 text-gray-400" />
-//           <input
-//             type="text"
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//             placeholder="Search for meals (e.g. Jollof, Chicken, Spicy, Pasta...)"
-//             className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-150 rounded-2xl text-xs font-semibold focus:outline-none focus:bg-white focus:border-[#FF4D6D] transition-all"
-//           />
-//         </div>
-
-//         {/* Filters and Sorting Row */}
-//         <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-100 pt-5">
-//           {/* Categories Tab list */}
-//           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full">
-//             {categories.map((cat) => (
-//               <button
-//                 key={cat}
-//                 type="button"
-//                 onClick={() => setSelectedCategory(cat)}
-//                 className={`px-4.5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-//                   selectedCategory === cat
-//                     ? 'bg-[#FF4D6D] text-white shadow-md'
-//                     : 'bg-gray-50 text-gray-600 hover:bg-pink-50 hover:text-[#FF4D6D]'
-//                 }`}
-//               >
-//                 {cat}
-//               </button>
-//             ))}
-//           </div>
-
-//           {/* Price & Sort inputs */}
-//           <div className="flex flex-wrap items-center gap-4">
-//             {/* Price range filter */}
-//             <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-xl border border-gray-150">
-//               <SlidersHorizontal className="w-4 h-4 text-gray-400" />
-//               <div className="flex flex-col">
-//                 <span className="text-[9px] font-bold text-gray-400 uppercase">Max Price</span>
-//                 <span className="text-xs font-extrabold text-gray-700">${maxPrice}</span>
-//               </div>
-//               <input
-//                 type="range"
-//                 min="5"
-//                 max="30"
-//                 step="1"
-//                 value={maxPrice}
-//                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-//                 className="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#FF4D6D]"
-//               />
-//             </div>
-
-//             {/* Sorting */}
-//             <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-150">
-//               <ArrowUpDown className="w-4 h-4 text-gray-400" />
-//               <select
-//                 value={sortBy}
-//                 onChange={(e) => setSortBy(e.target.value)}
-//                 className="bg-transparent text-xs font-bold text-gray-600 focus:outline-none cursor-pointer"
-//               >
-//                 <option value="popularity">Popularity</option>
-//                 <option value="price_asc">Price: Low to High</option>
-//                 <option value="price_desc">Price: High to Low</option>
-//                 <option value="name">Meal Name</option>
-//               </select>
-//             </div>
-//           </div>
-//         </div>
-//       </section>
-
-//       {/* Meals Grid */}
-//       <section className="min-h-[40vh]">
-//         {loading ? (
-//           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-//             <SkeletonLoader type="card" count={4} />
-//           </div>
-//         ) : sortedMeals.length === 0 ? (
-//           <EmptyState 
-//             type="search" 
-//             title="No Meals Match Filters" 
-//             message="Adjust your keyword filters, category choice, or increase the price limit."
-//             actionText="Clear Filters"
-//             actionLink={null}
-//             // Trigger clear filters manually
-//             actionOnClick={() => {
-//               setSearchQuery('');
-//               setSelectedCategory('All');
-//               setMaxPrice(25);
-//               setSortBy('popularity');
-//             }}
-//           />
-//         ) : (
-//           <motion.div 
-//             layout
-//             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-//           >
-//             <AnimatePresence mode="popLayout">
-//               {sortedMeals.map((meal, index) => {
-//                 const isFav = favorites.includes(meal.id);
-//                 return (
-//                   <AnimatedCard key={meal.id} index={index} className="flex flex-col justify-between h-full overflow-hidden relative">
-//                     {/* Image Area */}
-//                     <div className="h-44 overflow-hidden relative group">
-//                       <img src={meal.image} alt={meal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      
-//                       {/* Favorite Button */}
-//                       <button
-//                         onClick={() => toggleFavorite(meal.id)}
-//                         className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-[#FF4D6D] rounded-full shadow-sm backdrop-blur-xs transition-colors"
-//                       >
-//                         <Heart className={`w-4 h-4 transition-all ${isFav ? 'fill-[#FF4D6D] text-[#FF4D6D]' : ''}`} />
-//                       </button>
-
-//                       {/* Category Badge */}
-//                       <span className="absolute bottom-3 left-3 bg-white text-gray-800 text-[9px] font-black uppercase px-2.5 py-1 rounded-full border border-pink-50 shadow-sm">
-//                         {meal.category}
-//                       </span>
-//                     </div>
-
-//                     {/* Content Area */}
-//                     <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-//                       <div className="flex flex-col gap-1">
-//                         <div className="flex justify-between items-center">
-//                           <span className="text-[#FF4D6D] font-black text-base">
-//                             ${meal.price.toFixed(2)}
-//                           </span>
-//                           <span className="text-[9px] font-bold text-gray-400 flex items-center gap-0.5">
-//                             <Star className="w-3 h-3 fill-orange-400 text-orange-400" />
-//                             {meal.rating} ({meal.reviews})
-//                           </span>
-//                         </div>
-//                         <h3 className="font-extrabold text-xs text-gray-800 line-clamp-1">{meal.name}</h3>
-//                         <p className="text-[10px] text-gray-400 line-clamp-2 leading-relaxed">{meal.description}</p>
-//                       </div>
-
-//                       {/* Availability & Actions */}
-//                       <div className="flex items-center justify-between gap-3 mt-1.5">
-//                         <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-//                           meal.available ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
-//                         }`}>
-//                           {meal.available ? 'In Stock' : 'Out of Stock'}
-//                         </span>
-
-//                         <div className="flex gap-2">
-//                           <Link to={`/menu/${meal.id}`}>
-//                             <button className="px-3 py-2 bg-gray-50 border border-gray-100 hover:bg-[#FFF7F8] hover:text-[#FF4D6D] text-gray-500 rounded-xl font-bold text-[10px] transition-colors">
-//                               Details
-//                             </button>
-//                           </Link>
-//                           <button
-//                             onClick={() => addToCart(meal)}
-//                             disabled={!meal.available}
-//                             className={`p-2 bg-gradient-to-r from-[#FF4D6D] to-[#E63956] text-white rounded-xl shadow-md transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
-//                             title="Add to Cart"
-//                           >
-//                             <ShoppingCart className="w-3.5 h-3.5" />
-//                           </button>
-//                         </div>
-//                       </div>
-//                     </div>
-//                   </AnimatedCard>
-//                 );
-//               })}
-//             </AnimatePresence>
-//           </motion.div>
-//         )}
-//       </section>
-//     </div>
-//   );
-// };
-
-// export default Menu;
+export default Menu;
