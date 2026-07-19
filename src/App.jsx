@@ -16,6 +16,9 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Menu from "./pages/Menu";
+import  { About } from "./pages/About";
+import  { Contact } from "./pages/Contact";
+
 
 
 
@@ -38,6 +41,8 @@ function App() {
     <Route path="login" element={<Login />} />
     <Route path="register" element={<Register />} />
     <Route path="menu" element={<Menu />} />
+    <Route path="about" element={<About />} />
+    <Route path="contact" element={<Contact />} />
 
     {/* Protected Routes */}
     <Route element={<ProtectedRoute />}>

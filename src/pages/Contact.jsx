@@ -1,3 +1,5 @@
+// create a contact page with a form that allows user to send a message
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Mail, Phone, MapPin, Send, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';

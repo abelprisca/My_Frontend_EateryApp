@@ -1,3 +1,5 @@
+// search, filter, sort and display menu items with add to cart functionality
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
