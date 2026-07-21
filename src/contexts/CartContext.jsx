@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthContext } from './AuthContext';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { AuthContext } from "./AuthContext";
 
 export const CartContext = createContext(null);
 
@@ -9,23 +9,28 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
-  // Load cart from localStorage
   useEffect(() => {
-    const savedCart = localStorage.getItem('eatery_cart');
+    const saved = localStorage.getItem("eatery_cart");
 
-    if (savedCart) {
+    if (saved) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        setCartItems(JSON.parse(saved));
       } catch (err) {
-        console.error(err);
+        console.log(err);
       }
     }
   }, []);
 
-  // Save cart whenever it changes
   useEffect(() => {
-    localStorage.setItem('eatery_cart', JSON.stringify(cartItems));
+    localStorage.setItem(
+      "eatery_cart",
+      JSON.stringify(cartItems)
+    );
   }, [cartItems]);
+
+  // ======================
+  // ADD TO CART
+  // ======================
 
   const addToCart = (meal, quantity = 1) => {
     if (!isAuthenticated) {
@@ -34,66 +39,155 @@ export const CartProvider = ({ children }) => {
     }
 
     setCartItems((prev) => {
-      const existing = prev.find((item) => item._id === meal._id);
+      const existing = prev.find(
+        (item) => item._id === meal._id
+      );
 
       if (existing) {
         return prev.map((item) =>
           item._id === meal._id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+              }
             : item
         );
       }
 
-      return [...prev, { ...meal, quantity }];
+      return [
+        ...prev,
+        {
+          ...meal,
+          quantity,
+          savedForLater: false,
+        },
+      ];
     });
   };
 
-  const removeFromCart = (mealId) => {
+  // ======================
+  // REMOVE
+  // ======================
+
+  const removeFromCart = (id) => {
     setCartItems((prev) =>
-      prev.filter((item) => item._id !== mealId)
+      prev.filter((item) => item._id !== id)
     );
   };
 
-  const updateQuantity = (mealId, quantity) => {
+  // ======================
+  // UPDATE QUANTITY
+  // ======================
+
+  const updateQuantity = (id, qty) => {
+    if (qty <= 0) {
+      removeFromCart(id);
+      return;
+    }
+
     setCartItems((prev) =>
       prev.map((item) =>
-        item._id === mealId
-          ? { ...item, quantity }
+        item._id === id
+          ? {
+              ...item,
+              quantity: qty,
+            }
           : item
       )
     );
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem('eatery_cart');
+  // ======================
+  // SAVE FOR LATER
+  // ======================
+
+  const toggleSaveForLater = (id) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item._id === id
+          ? {
+              ...item,
+              savedForLater: !item.savedForLater,
+            }
+          : item
+      )
+    );
   };
 
-  const totalItemsCount = cartItems.reduce(
+  // ======================
+  // CLEAR
+  // ======================
+
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem("eatery_cart");
+  };
+
+  // ======================
+  // ACTIVE ITEMS
+  // ======================
+
+  const activeItems = cartItems.filter(
+    (item) => !item.savedForLater
+  );
+
+  // ======================
+  // SAVED ITEMS
+  // ======================
+
+  const savedItems = cartItems.filter(
+    (item) => item.savedForLater
+  );
+
+  // ======================
+  // SUBTOTAL
+  // ======================
+
+  const subtotal = activeItems.reduce(
+    (sum, item) =>
+      sum + item.price * item.quantity,
+    0
+  );
+
+  // ======================
+  // DELIVERY
+  // ======================
+
+  const deliveryFee =
+    subtotal >= 50000 || subtotal === 0
+      ? 0
+      : 2500;
+
+  // ======================
+  // TOTAL
+  // ======================
+
+  const total = subtotal + deliveryFee;
+
+  const totalItemsCount = activeItems.reduce(
     (sum, item) => sum + item.quantity,
     0
   );
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  const value = {
-    cartItems,
-    setCartItems,
-    loginPromptOpen,
-    setLoginPromptOpen,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    totalItemsCount,
-    subtotal,
-  };
-
   return (
-    <CartContext.Provider value={value}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        activeItems,
+        savedItems,
+        subtotal,
+        deliveryFee,
+        total,
+        totalItemsCount,
+        loginPromptOpen,
+        setLoginPromptOpen,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        toggleSaveForLater,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

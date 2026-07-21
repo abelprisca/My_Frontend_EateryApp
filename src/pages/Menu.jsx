@@ -11,6 +11,9 @@ import {
 import { motion } from "framer-motion";
 import API from "../services/api";
 import useCart from "../hooks/useCart";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+
 
 function Menu() {
   const { addToCart } = useCart();
@@ -599,15 +602,12 @@ function Menu() {
 
                   <div className="flex gap-4 mt-8">
 
-                    <button
-
-                      className="flex-1 py-3 rounded-xl border-2 border-pink-500 text-pink-500 font-bold hover:bg-pink-500 hover:text-white transition"
-
-                    >
-
-                      View Details
-
-                    </button>
+                    <Link to={`/menu/${meal._id}`} className="flex-1">
+  <button className="w-full py-3 rounded-xl border-2 border-pink-500 text-pink-500 font-bold hover:bg-pink-500 hover:text-white transition" >
+  
+    View Details
+  </button>
+</Link>
 
                     <button
 

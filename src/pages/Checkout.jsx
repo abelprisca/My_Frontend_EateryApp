@@ -1,12 +1,463 @@
-import React from 'react'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  MapPin,
+  ShoppingBag,
+  ShoppingCart,
+  Trash2,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+
+import API from "../services/api";
+import useCart from "../hooks/useCart";
+import useAuth from "../hooks/useAuth";
 
 function Checkout() {
+  const navigate = useNavigate();
+
+  const { user, isAuthenticated } = useAuth();
+
+  const {
+    activeItems,
+    subtotal,
+    deliveryFee,
+    total,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+  } = useCart();
+
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    user?.address || ""
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  // ===========================
+  // Increase Quantity
+  // ===========================
+
+  const increaseQuantity = (item) => {
+    updateQuantity(item._id, item.quantity + 1);
+  };
+
+  // ===========================
+  // Decrease Quantity
+  // ===========================
+
+  const decreaseQuantity = (item) => {
+    if (item.quantity <= 1) {
+      removeFromCart(item._id);
+      toast.success("Item removed from cart");
+      return;
+    }
+
+    updateQuantity(item._id, item.quantity - 1);
+  };
+
+  // ===========================
+  // Remove Item
+  // ===========================
+
+  const handleRemove = (id) => {
+    removeFromCart(id);
+    toast.success("Item removed from cart");
+  };
+
+  // ===========================
+  // Empty Cart
+  // ===========================
+
+  if (activeItems.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto py-20 px-5">
+
+        <div className="bg-white rounded-3xl shadow-xl p-12 text-center">
+
+          <ShoppingCart
+            size={70}
+            className="mx-auto text-pink-500"
+          />
+
+          <h2 className="text-3xl font-black mt-6">
+            Your Cart is Empty
+          </h2>
+
+          <p className="text-gray-500 mt-3">
+            Browse our delicious menu and add your favourite meals.
+          </p>
+
+          <button
+            onClick={() => navigate("/menu")}
+            className="mt-8 px-8 py-4 rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold hover:scale-105 transition"
+          >
+            Browse Menu
+          </button>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>Checkout</div>
-  )
+    <div className="max-w-7xl mx-auto px-5 py-10">
+
+      {/* Header */}
+
+      <motion.div
+        initial={{ opacity: 0, y: -25 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-10"
+      >
+
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-rose-600 font-semibold hover:text-orange-600"
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
+
+        <h1 className="mt-5 text-5xl font-black text-gray-800">
+          Checkout
+        </h1>
+
+        <p className="text-gray-500 mt-2">
+          Review your order before placing it.
+        </p>
+
+      </motion.div>
+
+      <div className="grid lg:grid-cols-3 gap-8">
+
+        {/* LEFT SIDE */}
+
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Delivery Address */}
+
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl shadow-lg border border-rose-100 p-7"
+          >
+
+            <div className="flex items-center gap-3 mb-6">
+
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 flex items-center justify-center text-white">
+                <MapPin size={22} />
+              </div>
+
+              <div>
+
+                <h2 className="text-xl font-black">
+                  Delivery Address
+                </h2>
+
+                <p className="text-gray-500 text-sm">
+                  Tell us where your food should be delivered.
+                </p>
+
+              </div>
+
+            </div>
+
+            <textarea
+              rows={5}
+              value={deliveryAddress}
+              onChange={(e) =>
+                setDeliveryAddress(e.target.value)
+              }
+              placeholder="Enter delivery address..."
+              className="w-full rounded-2xl border border-gray-200 p-5 resize-none focus:outline-none focus:ring-2 focus:ring-rose-400"
+            />
+
+          </motion.div>
+
+          {/* Order Items */}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-3xl shadow-lg border border-rose-100 p-7"
+          >
+
+            <div className="flex items-center gap-3 mb-7">
+
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 flex items-center justify-center text-white">
+                <ShoppingBag size={22} />
+              </div>
+
+              <div>
+
+                <h2 className="text-xl font-black">
+                  Order Items
+                </h2>
+
+                <p className="text-gray-500 text-sm">
+                  Review everything before placing your order.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="space-y-5">
+                            {activeItems.map((item) => (
+
+                <motion.div
+                  key={item._id}
+                  layout
+                  whileHover={{ scale: 1.01 }}
+                  className="rounded-3xl border border-gray-100 hover:border-rose-200 hover:shadow-xl transition-all p-5"
+                >
+
+                  <div className="flex gap-5">
+
+                    <img
+                      src={
+                        item.image
+                          ? `http://localhost:5000${item.image}`
+                          : "/default-food.jpg"
+                      }
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.src = "/default-food.jpg";
+                      }}
+                      className="w-32 h-32 rounded-2xl object-cover bg-gray-50"
+                    />
+
+                    <div className="flex-1">
+
+                      <div className="flex justify-between">
+
+                        <div>
+
+                          <h3 className="font-black text-xl text-gray-800">
+                            {item.name}
+                          </h3>
+
+                          <p className="text-sm text-gray-500 mt-2">
+                            {item.category || "Delicious Meal"}
+                          </p>
+
+                        </div>
+
+                        <button
+                          onClick={() => handleRemove(item._id)}
+                          className="w-11 h-11 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+
+                      </div>
+
+                      <div className="flex justify-between items-center mt-6">
+
+                        <div className="flex items-center gap-3">
+
+                          <button
+                            onClick={() => decreaseQuantity(item)}
+                            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-rose-500 hover:text-white transition font-bold"
+                          >
+                            -
+                          </button>
+
+                          <span className="font-black text-lg w-8 text-center">
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            onClick={() => increaseQuantity(item)}
+                            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-rose-500 hover:text-white transition font-bold"
+                          >
+                            +
+                          </button>
+
+                        </div>
+
+                        <div className="text-right">
+
+                          <p className="text-sm text-gray-400">
+                            Unit Price
+                          </p>
+
+                          <p className="font-bold text-lg">
+                            ₦{item.price.toLocaleString()}
+                          </p>
+
+                          <p className="text-rose-600 font-black mt-1">
+                            ₦{(item.price * item.quantity).toLocaleString()}
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </motion.div>
+
+              ))}
+
+            </div>
+
+          </motion.div>
+
+        </div>
+
+        {/* RIGHT SIDE */}
+
+        <div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="sticky top-24 bg-white rounded-3xl shadow-xl border border-rose-100 p-7"
+          >
+
+            <h2 className="text-2xl font-black mb-7">
+              Order Summary
+            </h2>
+
+            <div className="space-y-5">
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-bold">
+                  ₦{subtotal.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Delivery Fee</span>
+
+                <span className="font-bold">
+                  {deliveryFee === 0
+                    ? "FREE"
+                    : `₦${deliveryFee.toLocaleString()}`}
+                </span>
+
+              </div>
+
+              <hr />
+
+              <div className="flex justify-between">
+
+                <span className="font-black text-lg">
+                  Total
+                </span>
+
+                <span className="text-3xl font-black text-rose-600">
+                  ₦{total.toLocaleString()}
+                </span>
+
+              </div>
+
+            </div>
+
+                        <button
+              onClick={placeOrder}
+              disabled={loading}
+              className={`mt-8 w-full py-4 rounded-2xl text-white font-bold text-lg transition-all duration-300 shadow-lg ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 hover:shadow-2xl hover:scale-[1.02] active:scale-95"
+              }`}
+            >
+              {loading ? "Placing Order..." : "Place Order"}
+            </button>
+
+            <p className="mt-5 text-xs text-center text-gray-400">
+              Your order will be prepared immediately after confirmation.
+            </p>
+
+          </motion.div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
+
+  // ==========================================
+  // PLACE ORDER
+  // ==========================================
+
+  async function placeOrder() {
+
+    if (!isAuthenticated) {
+      toast.error("Please login first.");
+      navigate("/login");
+      return;
+    }
+
+    if (!deliveryAddress.trim()) {
+      toast.error("Delivery address is required.");
+      return;
+    }
+
+    if (activeItems.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    try {
+
+      setLoading(true);
+
+      const payload = {
+        deliveryAddress,
+        items: activeItems.map((item) => ({
+          menuItemId: item._id,
+          quantity: item.quantity,
+        })),
+      };
+
+      const { data } = await API.post("/orders", payload);
+
+      console.log(data);
+
+      toast.success("Order placed successfully!");
+
+      clearCart();
+
+      navigate("/orders");
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        error.response?.data?.message ||
+        "Unable to place your order."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  }
+
 }
 
-export default Checkout
+export default Checkout;
+
+
+
+
+
+
+
+
 // import React, { useState } from 'react';
 // import { useNavigate, Link } from 'react-router-dom';
 // import { useForm } from 'react-hook-form';
