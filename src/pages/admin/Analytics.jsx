@@ -1,253 +1,701 @@
-import React from 'react'
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-function Analytics() {
+import API from "../../services/api";
+
+import StatsCards from "../../components/admin/StatsCards";
+
+import OrdersBarChart from "../../components/admin/charts/OrdersBarChart";
+import OrderStatusPieChart from "../../components/admin/charts/OrderStatusPieChart";
+
+
+const Analytics = () => {
+
+
+  const [loading, setLoading] = useState(true);
+
+
+
+  const [analytics, setAnalytics] = useState({
+
+    totalOrders: 0,
+
+    totalRevenue: 0,
+
+    pendingOrders: 0,
+
+    deliveredOrders: 0,
+
+    totalMeals: 0,
+
+    monthlyOrders: [],
+
+    orderStatus: []
+
+  });
+
+
+
+
+
+
+  useEffect(() => {
+
+
+    const fetchAnalytics = async () => {
+
+
+      try {
+
+
+        setLoading(true);
+
+
+
+        // ======================================
+        // FETCH BACKEND DATA
+        // ======================================
+
+
+        const [
+
+          ordersResponse,
+
+          menuResponse
+
+
+        ] = await Promise.all([
+
+
+          API.get("/orders/admin/all"),
+
+
+          API.get("/menu")
+
+
+        ]);
+
+
+
+
+
+
+
+        // ======================================
+        // EXTRACT DATA SAFELY
+        // ======================================
+
+
+        const orders =
+
+          ordersResponse.data.data?.orders ||
+
+          ordersResponse.data.data ||
+
+          ordersResponse.data ||
+
+          [];
+
+
+
+
+
+        const menuItems =
+
+          menuResponse.data.data?.menu ||
+
+          menuResponse.data.data ||
+
+          menuResponse.data ||
+
+          [];
+
+
+
+
+
+
+
+
+        // ======================================
+        // STATISTICS
+        // ======================================
+
+
+        const totalOrders = orders.length;
+
+
+
+
+
+        const pendingOrders =
+
+          orders.filter(
+
+            (order) =>
+
+              order.status?.toLowerCase() === "pending"
+
+          ).length;
+
+
+
+
+
+
+        const deliveredOrders =
+
+          orders.filter(
+
+            (order) =>
+
+              order.status?.toLowerCase() === "delivered"
+
+          ).length;
+
+
+
+
+
+
+
+
+        const totalRevenue =
+
+
+          orders
+
+          .filter(
+
+            (order)=>
+
+              order.status?.toLowerCase()
+              === "delivered"
+
+          )
+
+
+          .reduce(
+
+            (sum, order)=>
+
+              sum +
+
+              Number(
+
+                order.total ||
+
+                order.totalAmount ||
+
+                0
+
+              ),
+
+
+              0
+
+          );
+
+
+
+
+
+
+
+
+
+
+        // ======================================
+        // BAR CHART
+        // MONTHLY ORDERS
+        // ======================================
+
+
+        const months = [
+
+          "Jan",
+
+          "Feb",
+
+          "Mar",
+
+          "Apr",
+
+          "May",
+
+          "Jun",
+
+          "Jul",
+
+          "Aug",
+
+          "Sep",
+
+          "Oct",
+
+          "Nov",
+
+          "Dec"
+
+        ];
+
+
+
+
+
+        const monthlyObject = {};
+
+
+
+
+
+        orders.forEach((order)=>{
+
+
+          const date = new Date(
+
+            order.createdAt
+
+          );
+
+
+
+          const month =
+
+            months[date.getMonth()];
+
+
+
+          monthlyObject[month] =
+
+            (monthlyObject[month] || 0) + 1;
+
+
+
+        });
+
+
+
+
+
+
+
+        const monthlyOrders =
+
+
+          Object.entries(monthlyObject)
+
+          .map(([month,value])=>({
+
+
+            name: month,
+
+
+            orders: value
+
+
+          }));
+
+
+
+
+
+
+
+
+
+        // ======================================
+        // PIE CHART
+        // ORDER STATUS
+        // ======================================
+
+
+        const statusObject = {};
+
+
+
+
+
+        orders.forEach((order)=>{
+
+
+          const status =
+
+            order.status || "Unknown";
+
+
+
+          statusObject[status] =
+
+            (statusObject[status] || 0) + 1;
+
+
+
+        });
+
+
+
+
+
+
+
+        const orderStatus =
+
+
+          Object.entries(statusObject)
+
+          .map(([status,value])=>({
+
+
+            name: status,
+
+
+            value
+
+
+          }));
+
+
+
+
+
+
+
+
+
+        // ======================================
+        // UPDATE STATE
+        // ======================================
+
+
+        setAnalytics({
+
+
+          totalOrders,
+
+
+          totalRevenue,
+
+
+          pendingOrders,
+
+
+          deliveredOrders,
+
+
+          totalMeals: menuItems.length,
+
+
+          monthlyOrders,
+
+
+          orderStatus
+
+
+        });
+
+
+
+
+
+
+      } catch(error) {
+
+
+        console.error(
+
+          "Analytics Error:",
+
+          error.response?.data || error.message
+
+        );
+
+
+      } finally {
+
+
+        setLoading(false);
+
+
+      }
+
+
+    };
+
+
+
+
+    fetchAnalytics();
+
+
+
+  }, []);
+
+
+
+
+
+
+
+
+
   return (
-    <div>Analytics</div>
-  )
-}
 
-export default Analytics
-// import React, { useState, useEffect } from 'react';
-// import { mockApi } from '../../services/api';
-// import { 
-//   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-//   BarChart, Bar, PieChart, Pie, Cell, Legend
-// } from 'recharts';
-// import { BarChart3, TrendingUp, Tag, PieChart as PieIcon, HelpCircle } from 'lucide-react';
-// import SkeletonLoader from '../../components/ui/SkeletonLoader';
+    <div className="space-y-8">
 
-// export const Analytics = () => {
-//   const [loading, setLoading] = useState(true);
-//   const [revenueData, setRevenueData] = useState([]);
-//   const [weeklyOrdersData, setWeeklyOrdersData] = useState([]);
-//   const [categoryData, setCategoryData] = useState([]);
-//   const [statusData, setStatusData] = useState([]);
 
-//   useEffect(() => {
-//     const compileAnalytics = async () => {
-//       try {
-//         const orders = await mockApi.orders.getAll();
 
-//         // 1. Revenue over last 7 days
-//         const last7Days = Array.from({ length: 7 }).map((_, i) => {
-//           const d = new Date();
-//           d.setDate(d.getDate() - i);
-//           return d.toISOString().split('T')[0];
-//         }).reverse();
 
-//         const revenueMap = {};
-//         const ordersCountMap = {};
-//         last7Days.forEach(date => {
-//           revenueMap[date] = 0;
-//           ordersCountMap[date] = 0;
-//         });
 
-//         orders.forEach(order => {
-//           const orderDateStr = order.date.split('T')[0];
-//           if (orderDateStr in revenueMap) {
-//             ordersCountMap[orderDateStr] += 1;
-//             if (order.status === 'delivered') {
-//               revenueMap[orderDateStr] += order.total;
-//             }
-//           }
-//         });
+      {/* PAGE HEADER */}
 
-//         const lineChartData = last7Days.map(date => {
-//           const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
-//           return {
-//             date: dayName,
-//             Revenue: parseFloat(revenueMap[date].toFixed(2)),
-//           };
-//         });
-//         setRevenueData(lineChartData);
 
-//         // 2. Weekly Orders Counts (last 7 days)
-//         const barChartData = last7Days.map(date => {
-//           const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
-//           return {
-//             day: dayName,
-//             Orders: ordersCountMap[date],
-//           };
-//         });
-//         setWeeklyOrdersData(barChartData);
+      <motion.div
 
-//         // 3. Category Pie Chart Distribution
-//         const catCounts = {};
-//         orders.forEach(order => {
-//           order.items.forEach(item => {
-//             const cat = item.category || 'Dishes';
-//             catCounts[cat] = (catCounts[cat] || 0) + item.quantity;
-//           });
-//         });
 
-//         const pieCatData = Object.entries(catCounts).map(([name, value]) => ({
-//           name,
-//           value,
-//         }));
-//         setCategoryData(pieCatData.length > 0 ? pieCatData : [{ name: 'Rice Dishes', value: 10 }, { name: 'Burgers', value: 5 }]);
+        initial={{
 
-//         // 4. Order Status Distribution
-//         const statCounts = { pending: 0, preparing: 0, ready: 0, out_for_delivery: 0, delivered: 0, cancelled: 0 };
-//         orders.forEach(order => {
-//           statCounts[order.status] = (statCounts[order.status] || 0) + 1;
-//         });
+          opacity:0,
 
-//         const pieStatData = Object.entries(statCounts)
-//           .filter(([_, val]) => val > 0)
-//           .map(([name, value]) => ({
-//             name: name.replace(/_/g, ' ').toUpperCase(),
-//             value,
-//           }));
-        
-//         setStatusData(pieStatData.length > 0 ? pieStatData : [{ name: 'DELIVERED', value: 4 }, { name: 'PENDING', value: 2 }]);
+          y:-20
 
-//       } catch (err) {
-//         console.error('Error generating analytics:', err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+        }}
 
-//     compileAnalytics();
-//   }, []);
 
-//   const COLORS = ['#FF4D6D', '#FF9F1C', '#7B61FF', '#2563EB', '#16A34A', '#EC4899'];
-//   const STATUS_COLORS = ['#F59E0B', '#2563EB', '#7B61FF', '#3B82F6', '#16A34A', '#DC2626'];
+        animate={{
 
-//   if (loading) {
-//     return (
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-//         <SkeletonLoader type="chart" count={4} />
-//       </div>
-//     );
-//   }
+          opacity:1,
 
-//   return (
-//     <div className="flex flex-col gap-8">
-//       {/* Visual Analytics Grid */}
-//       <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-//         {/* Line Chart: Revenue Trend */}
-//         <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm flex flex-col gap-4">
-//           <div className="flex items-center gap-2 border-b border-gray-50 pb-3">
-//             <TrendingUp className="w-5 h-5 text-[#FF4D6D]" />
-//             <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Revenue Trend (Last 7 Days)</h3>
-//           </div>
-//           <div className="h-64">
-//             <ResponsiveContainer width="100%" height="100%">
-//               <LineChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-//                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-//                 <XAxis dataKey="date" stroke="#94A3B8" fontSize={11} tickLine={false} />
-//                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
-//                 <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '12px' }} />
-//                 <Line type="monotone" dataKey="Revenue" stroke="#FF4D6D" strokeWidth={3} activeDot={{ r: 8 }} dot={{ stroke: '#FF4D6D', strokeWidth: 2, r: 4 }} />
-//               </LineChart>
-//             </ResponsiveContainer>
-//           </div>
-//         </div>
+          y:0
 
-//         {/* Bar Chart: Weekly Orders count */}
-//         <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm flex flex-col gap-4">
-//           <div className="flex items-center gap-2 border-b border-gray-50 pb-3">
-//             <BarChart3 className="w-5 h-5 text-[#7B61FF]" />
-//             <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Weekly Orders Count</h3>
-//           </div>
-//           <div className="h-64">
-//             <ResponsiveContainer width="100%" height="100%">
-//               <BarChart data={weeklyOrdersData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-//                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-//                 <XAxis dataKey="day" stroke="#94A3B8" fontSize={11} tickLine={false} />
-//                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
-//                 <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', fontSize: '12px' }} />
-//                 <Bar dataKey="Orders" fill="#7B61FF" radius={[8, 8, 0, 0]} barSize={28} />
-//               </BarChart>
-//             </ResponsiveContainer>
-//           </div>
-//         </div>
+        }}
 
-//         {/* Pie Chart: Categories distribution */}
-//         <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm flex flex-col gap-4">
-//           <div className="flex items-center gap-2 border-b border-gray-50 pb-3">
-//             <Tag className="w-5 h-5 text-[#FF9F1C]" />
-//             <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Categories Popularity</h3>
-//           </div>
-//           <div className="h-64 flex flex-col sm:flex-row items-center justify-center gap-4">
-//             <div className="w-full sm:w-1/2 h-full">
-//               <ResponsiveContainer width="100%" height="100%">
-//                 <PieChart>
-//                   <Pie
-//                     data={categoryData}
-//                     cx="50%"
-//                     cy="50%"
-//                     innerRadius={50}
-//                     outerRadius={75}
-//                     paddingAngle={3}
-//                     dataKey="value"
-//                   >
-//                     {categoryData.map((entry, index) => (
-//                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-//                     ))}
-//                   </Pie>
-//                   <Tooltip formatter={(value) => [`${value} qty`, 'Quantity']} />
-//                 </PieChart>
-//               </ResponsiveContainer>
-//             </div>
-            
-//             <div className="w-full sm:w-1/2 flex flex-col gap-2.5 max-h-48 overflow-y-auto no-scrollbar justify-center">
-//               {categoryData.map((entry, idx) => (
-//                 <div key={idx} className="flex items-center gap-2.5 text-xs text-gray-600">
-//                   <div className="w-3.5 h-3.5 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-//                   <span className="truncate max-w-[120px] font-semibold">{entry.name}</span>
-//                   <span className="text-gray-400 font-bold ml-auto">{entry.value} ordered</span>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
 
-//         {/* Pie Chart: Order Status distribution */}
-//         <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-sm flex flex-col gap-4">
-//           <div className="flex items-center gap-2 border-b border-gray-50 pb-3">
-//             <PieIcon className="w-5 h-5 text-[#16A34A]" />
-//             <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Order Status Distribution</h3>
-//           </div>
-//           <div className="h-64 flex flex-col sm:flex-row items-center justify-center gap-4">
-//             <div className="w-full sm:w-1/2 h-full">
-//               <ResponsiveContainer width="100%" height="100%">
-//                 <PieChart>
-//                   <Pie
-//                     data={statusData}
-//                     cx="50%"
-//                     cy="50%"
-//                     innerRadius={0}
-//                     outerRadius={75}
-//                     paddingAngle={0}
-//                     dataKey="value"
-//                   >
-//                     {statusData.map((entry, index) => (
-//                       <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
-//                     ))}
-//                   </Pie>
-//                   <Tooltip formatter={(value) => [`${value} orders`, 'Count']} />
-//                 </PieChart>
-//               </ResponsiveContainer>
-//             </div>
-            
-//             <div className="w-full sm:w-1/2 flex flex-col gap-2.5 justify-center">
-//               {statusData.map((entry, idx) => (
-//                 <div key={idx} className="flex items-center gap-2.5 text-xs text-gray-600">
-//                   <div className="w-3.5 h-3.5 rounded-full shrink-0 animate-pulse" style={{ backgroundColor: STATUS_COLORS[idx % STATUS_COLORS.length] }}></div>
-//                   <span className="font-semibold">{entry.name}</span>
-//                   <span className="text-gray-400 font-bold ml-auto">{entry.value} order{entry.value > 1 ? 's' : ''}</span>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
+        transition={{
 
-//       </section>
-//     </div>
-//   );
-// };
+          duration:0.5
 
-// export default Analytics;
+        }}
+
+
+      >
+
+
+        <h1 className="
+          text-3xl
+          font-black
+          text-gray-900
+          dark:text-white
+        ">
+
+          Analytics Dashboard
+
+        </h1>
+
+
+
+
+        <p className="
+          mt-2
+          text-gray-500
+          dark:text-gray-400
+        ">
+
+          Restaurant performance overview
+
+        </p>
+
+
+
+      </motion.div>
+
+
+
+
+
+
+
+
+
+      {/* STATISTICS CARDS */}
+
+
+      <StatsCards
+
+
+        totalOrders={
+
+          analytics.totalOrders
+
+        }
+
+
+        totalRevenue={
+
+          analytics.totalRevenue
+
+        }
+
+
+        pendingOrders={
+
+          analytics.pendingOrders
+
+        }
+
+
+        deliveredOrders={
+
+          analytics.deliveredOrders
+
+        }
+
+
+        totalMeals={
+
+          analytics.totalMeals
+
+        }
+
+
+        loading={loading}
+
+
+      />
+
+
+
+
+
+
+
+
+
+      {/* CHART AREA */}
+
+
+      <div className="
+
+        grid
+
+        grid-cols-1
+
+        xl:grid-cols-3
+
+        gap-6
+
+      ">
+
+
+
+
+
+        <motion.div
+
+
+          className="xl:col-span-2"
+
+
+          initial={{
+
+            opacity:0,
+
+            x:-30
+
+          }}
+
+
+          animate={{
+
+            opacity:1,
+
+            x:0
+
+          }}
+
+
+        >
+
+
+          <OrdersBarChart
+
+
+            data={
+
+              analytics.monthlyOrders
+
+            }
+
+
+          />
+
+
+        </motion.div>
+
+
+
+
+
+
+
+
+
+        <motion.div
+
+
+          initial={{
+
+            opacity:0,
+
+            x:30
+
+          }}
+
+
+          animate={{
+
+            opacity:1,
+
+            x:0
+
+          }}
+
+
+        >
+
+
+          <OrderStatusPieChart
+
+
+            data={
+
+              analytics.orderStatus
+
+            }
+
+
+          />
+
+
+        </motion.div>
+
+
+
+
+
+      </div>
+
+
+
+
+
+
+    </div>
+
+  );
+
+};
+
+
+
+export default Analytics;

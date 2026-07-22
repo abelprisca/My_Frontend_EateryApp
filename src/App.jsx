@@ -9,9 +9,10 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 
 // ==========================
-// LAYOUT
+// LAYOUTS
 // ==========================
 import MainLayout from "./layouts/MainLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 // ==========================
 // PUBLIC PAGES
@@ -29,14 +30,15 @@ import { About } from "./pages/About";
 import { Contact } from "./pages/Contact";
 
 // ==========================
-// ROUTE GUARD
+// ADMIN PAGES
 // ==========================
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Analytics from "./pages/admin/Analytics";
 
 // ==========================
-// OPTIONAL
+// ROUTE GUARDS
 // ==========================
-// import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AdminRoute from "./components/auth/AdminRoute";
 
 function App() {
   return (
@@ -45,6 +47,7 @@ function App() {
         <CartProvider>
 
           {/* Toast Notifications */}
+
           <Toaster
             position="top-right"
             toastOptions={{
@@ -59,16 +62,14 @@ function App() {
 
           <Routes>
 
-            {/* ==========================
-                    MAIN WEBSITE
-            ========================== */}
+            {/* =====================================================
+                          CUSTOMER WEBSITE
+            ===================================================== */}
 
             <Route element={<MainLayout />}>
 
-              {/* Home */}
               <Route index element={<Home />} />
 
-              {/* Public Pages */}
               <Route path="menu" element={<Menu />} />
               <Route path="menu/:id" element={<MealDetails />} />
 
@@ -78,20 +79,13 @@ function App() {
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
 
-              {/* =========================================
-                    TEMPORARY PUBLIC ROUTES FOR TESTING
-                    Move these into ProtectedRoute later
-              ========================================== */}
+              {/* Temporary Public Routes */}
 
               <Route path="cart" element={<Cart />} />
-
               <Route path="checkout" element={<Checkout />} />
-
               <Route path="orders" element={<Orders />} />
 
-              {/* =========================================
-                    PROTECTED ROUTES
-              ========================================== */}
+              {/* Protected Customer Routes */}
 
               <Route element={<ProtectedRoute />}>
 
@@ -100,39 +94,83 @@ function App() {
                   element={<Profile />}
                 />
 
-                {/* AFTER TESTING MOVE THESE HERE */}
+              </Route>
 
-                {/*
-                <Route path="cart" element={<Cart />} />
+            </Route>
+
+            {/* =====================================================
+                          ADMIN PANEL
+            ===================================================== */}
+
+            <Route element={<AdminRoute />}>
+
+              <Route
+                path="/admin"
+                element={<AdminLayout />}
+              >
+
+                {/* Redirect /admin -> /admin/analytics */}
 
                 <Route
-                  path="checkout"
-                  element={<Checkout />}
+                  index
+                  element={
+                    <Navigate
+                      to="analytics"
+                      replace
+                    />
+                  }
+                />
+
+                {/* Existing Page */}
+
+                <Route
+                  path="analytics"
+                  element={<Analytics />}
+                />
+
+                {/* =====================================================
+                            CREATE THESE LATER
+                ===================================================== */}
+
+                {/*
+                <Route
+                  path="orders"
+                  element={<AdminOrders />}
                 />
 
                 <Route
-                  path="orders"
-                  element={<Orders />}
+                  path="menu"
+                  element={<AdminMenu />}
+                />
+
+                <Route
+                  path="customers"
+                  element={<Customers />}
+                />
+
+                <Route
+                  path="reviews"
+                  element={<Reviews />}
+                />
+
+                <Route
+                  path="settings"
+                  element={<Settings />}
                 />
                 */}
 
               </Route>
 
-              {/* ==========================
-                    404 PAGE
-              ========================== */}
-
-              {/* <Route
-                path="*"
-                element={<NotFound />}
-              /> */}
-
-              <Route
-                path="*"
-                element={<Navigate to="/" replace />}
-              />
-
             </Route>
+
+            {/* =====================================================
+                              404
+            ===================================================== */}
+
+            <Route
+              path="*"
+              element={<Navigate to="/" replace />}
+            />
 
           </Routes>
 

@@ -8,7 +8,7 @@ import AnimatedButton from '../components/ui/AnimatedButton';
 import ErrorAlert from '../components/ui/ErrorAlert';
 
 export const Login = () => {
-  const { login, isAuthenticated } = useAuth();
+const { login, isAuthenticated, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -18,11 +18,21 @@ export const Login = () => {
   const redirectUrl = searchParams.get('redirect') || '/';
 
   // If already authenticated, redirect immediately
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(redirectUrl, { replace: true });
-    }
-  }, [isAuthenticated, navigate, redirectUrl]);
+ useEffect(() => {
+  if (!isAuthenticated || !user) return;
+
+  if (isAdmin) {
+    navigate("/admin/analytics", { replace: true });
+  } else {
+    navigate(redirectUrl, { replace: true });
+  }
+}, [
+  isAuthenticated,
+  isAdmin,
+  user,
+  navigate,
+  redirectUrl,
+]);
 
   const {
     register,
