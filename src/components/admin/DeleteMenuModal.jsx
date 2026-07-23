@@ -1,3 +1,4 @@
+// Deleting menu items
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Loader2, Trash2, X } from "lucide-react";
 
