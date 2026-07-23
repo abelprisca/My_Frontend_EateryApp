@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 
-function Menu() {
+function CustomerMenu() {
   const { addToCart } = useCart();
 
   const [meals, setMeals] = useState([]);
@@ -655,4 +655,4 @@ function Menu() {
 
 }
 
-export default Menu;
+export default CustomerMenu;

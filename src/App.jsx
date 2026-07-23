@@ -18,7 +18,7 @@ import AdminLayout from "./layouts/AdminLayout";
 // PUBLIC PAGES
 // ==========================
 import Home from "./pages/Home";
-import Menu from "./pages/Menu";
+import CustomerMenu from "./pages/Menu";
 import MealDetails from "./pages/MealDetails";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -33,21 +33,21 @@ import { Contact } from "./pages/Contact";
 // ADMIN PAGES
 // ==========================
 import Analytics from "./pages/admin/Analytics";
+import ManageMenu from "./pages/admin/ManageMenu";
 
 // ==========================
 // ROUTE GUARDS
 // ==========================
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
+import ManageOrders from "./pages/admin/ManageOrders";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-
           {/* Toast Notifications */}
-
           <Toaster
             position="top-right"
             toastOptions={{
@@ -63,35 +63,47 @@ function App() {
           <Routes>
 
             {/* =====================================================
-                          CUSTOMER WEBSITE
+                        CUSTOMER WEBSITE
             ===================================================== */}
 
             <Route element={<MainLayout />}>
 
+              {/* Home */}
               <Route index element={<Home />} />
 
-              <Route path="menu" element={<Menu />} />
+              {/* Public Menu */}
+              <Route path="menu" element={<CustomerMenu />} />
               <Route path="menu/:id" element={<MealDetails />} />
 
+              {/* Public Pages */}
               <Route path="about" element={<About />} />
               <Route path="contact" element={<Contact />} />
 
+              {/* Authentication */}
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
 
-              {/* Temporary Public Routes */}
-
-              <Route path="cart" element={<Cart />} />
-              <Route path="checkout" element={<Checkout />} />
-              <Route path="orders" element={<Orders />} />
-
-              {/* Protected Customer Routes */}
-
+              {/* Protected Customer Pages */}
               <Route element={<ProtectedRoute />}>
 
                 <Route
                   path="profile"
                   element={<Profile />}
+                />
+
+                <Route
+                  path="cart"
+                  element={<Cart />}
+                />
+
+                <Route
+                  path="checkout"
+                  element={<Checkout />}
+                />
+
+                <Route
+                  path="orders"
+                  element={<Orders />}
                 />
 
               </Route>
@@ -109,38 +121,37 @@ function App() {
                 element={<AdminLayout />}
               >
 
-                {/* Redirect /admin -> /admin/analytics */}
+                {/* Redirect /admin to analytics */}
 
                 <Route
                   index
-                  element={
-                    <Navigate
-                      to="analytics"
-                      replace
-                    />
-                  }
+                  element={<Navigate to="analytics" replace />}
                 />
 
-                {/* Existing Page */}
+                {/* Dashboard */}
 
                 <Route
                   path="analytics"
                   element={<Analytics />}
                 />
 
-                {/* =====================================================
-                            CREATE THESE LATER
-                ===================================================== */}
+                {/* Menu Management */}
+
+                <Route
+                  path="menu"
+                  element={<ManageMenu />}
+                />
+                <Route
+  path="/admin/orders"
+  element={<ManageOrders />}
+/>
+
+                {/* Future Pages */}
 
                 {/*
                 <Route
                   path="orders"
                   element={<AdminOrders />}
-                />
-
-                <Route
-                  path="menu"
-                  element={<AdminMenu />}
                 />
 
                 <Route
@@ -173,7 +184,6 @@ function App() {
             />
 
           </Routes>
-
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

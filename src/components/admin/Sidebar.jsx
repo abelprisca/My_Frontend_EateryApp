@@ -24,15 +24,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       path: "/admin/analytics",
     },
     {
-      title: "Manage Orders",
-      icon: ShoppingBag,
-      path: "/admin/orders",
-    },
-    {
-      title: "Manage Menu",
-      icon: UtensilsCrossed,
-      path: "/admin/menu",
-    },
+  title: "Manage Orders",
+  icon: ShoppingBag,
+  path: "/admin/orders",
+},
+   {
+  title: "Manage Menu",
+  icon: UtensilsCrossed,
+  path: "/admin/menu",
+},
     {
       title: "Customers",
       icon: Users,
