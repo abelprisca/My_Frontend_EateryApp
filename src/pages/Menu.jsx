@@ -13,8 +13,7 @@ import API from "../services/api";
 import useCart from "../hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-const IMAGE_BASE_URL = API.defaults.baseURL.replace("/api", "");
-
+const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
 
 function CustomerMenu() {
   const { addToCart } = useCart();
@@ -471,7 +470,7 @@ function CustomerMenu() {
 
                 <div className="relative h-72 bg-gradient-to-br from-pink-50 via-orange-50 to-white overflow-hidden">
 
-                 <img
+                <img
   src={
     meal.image
       ? `${IMAGE_BASE_URL}${meal.image}`
