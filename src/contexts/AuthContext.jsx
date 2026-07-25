@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
 
 
       const response = await API.post(
-        "https://my-backend-eateryapp.onrender.com/auth/login",
+        "/auth/login",
         {
           email,
           password

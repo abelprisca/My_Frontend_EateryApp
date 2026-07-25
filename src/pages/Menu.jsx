@@ -13,6 +13,7 @@ import API from "../services/api";
 import useCart from "../hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+const IMAGE_BASE_URL = API.defaults.baseURL.replace("/api", "");
 
 
 function CustomerMenu() {
@@ -470,19 +471,18 @@ function CustomerMenu() {
 
                 <div className="relative h-72 bg-gradient-to-br from-pink-50 via-orange-50 to-white overflow-hidden">
 
-                  <img
-
-                    src={
-                      meal.image
-                        ? `http://localhost:5000${meal.image}`
-                        : "/default-food.jpg"
-                    }
-
-                    alt={meal.name}
-
-                    className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
-
-                  />
+                 <img
+  src={
+    meal.image
+      ? `${IMAGE_BASE_URL}${meal.image}`
+      : "/default-food.jpg"
+  }
+  alt={meal.name}
+  className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
+  onError={(e) => {
+    e.target.src = "/default-food.jpg";
+  }}
+/>
 
                   {/* CATEGORY */}
 
