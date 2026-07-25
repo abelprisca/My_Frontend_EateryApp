@@ -470,6 +470,7 @@ function CustomerMenu() {
 
                 <div className="relative h-72 bg-gradient-to-br from-pink-50 via-orange-50 to-white overflow-hidden">
 
+               {console.log("meal.image:", meal.image)}
                 <img
   src={
     meal.image
