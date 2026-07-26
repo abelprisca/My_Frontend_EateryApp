@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import useCart from "../hooks/useCart";
 import EmptyState from "../components/ui/EmptyState";
-
+const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
 const Cart = () => {
   const {
     cartItems,
@@ -200,29 +200,17 @@ const Cart = () => {
                         <div className="md:w-60 h-52 bg-gray-50 overflow-hidden">
 
                           <img
-
-                            src={
-                              item.image
-                                ? `http://localhost:5000${item.image}`
-                                : "/default-food.jpg"
-                            }
-
-                            onError={(e) => {
-                              e.target.src = "/default-food.jpg";
-                            }}
-
-                            alt={item.name}
-
-                            className="
-                            w-full
-                            h-full
-                            object-contain
-                            hover:scale-110
-                            transition-transform
-                            duration-500
-                            "
-
-                          />
+  src={
+    item.image
+      ? `${IMAGE_BASE_URL}${item.image}`
+      : "/default-food.jpg"
+  }
+  onError={(e) => {
+    e.target.src = "/default-food.jpg";
+  }}
+  className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
+  alt={item.name}
+/>
 
                         </div>
 
