@@ -199,19 +199,13 @@ const Cart = () => {
 
                         <div className="md:w-60 h-52 bg-gray-50 overflow-hidden">
 
-                          <img
-  src={
-    item.image
-      ? `${IMAGE_BASE_URL}${item.image}`
-      : "/default-food.jpg"
-  }
-  onError={(e) => {
-    e.target.src = "/default-food.jpg";
-  }}
-  className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
-  alt={item.name}
-/>
-
+                          {item.image && (
+  <img
+    src={`${IMAGE_BASE_URL}${item.image}`}
+    className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
+    alt={item.name}
+  />
+)}
                         </div>
 
                         {/* DETAILS */}
@@ -482,20 +476,14 @@ const Cart = () => {
 
                         <div className="flex gap-4">
 
-console.log("IMAGE:", item.image);
-console.log("FULL URL:", `${IMAGE_BASE_URL}${item.image}`);
-                          <img
-  src={
-    item.image
-      ? `${IMAGE_BASE_URL}${item.image}`
-      : "/default-food.jpg"
-  }
-  alt={item.name}
-  className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
-  onError={(e) => {
-    e.target.src = "/default-food.jpg";
-  }}
-/>
+
+                         {item.image && (
+  <img
+    src={`${IMAGE_BASE_URL}${item.image}`}
+    className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
+    alt={item.name}
+  />
+)}
 
                           <div className="flex-1">
 
