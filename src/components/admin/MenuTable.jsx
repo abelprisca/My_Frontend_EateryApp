@@ -25,6 +25,8 @@ const categories = [
 
 const ITEMS_PER_PAGE = 8;
 
+const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
+
 const MenuTable = ({
   meals = [],
   loading = false,
@@ -171,15 +173,20 @@ const MenuTable = ({
               >
 
                 <td className="px-6 py-4">
-                  <img
-                    src={
-                      meal.image
-                      ? `http://localhost:5000${meal.image}`
-                      : "/placeholder-food.png"
-                    }
-                    alt={meal.name}
-                    className="w-16 h-16 rounded-xl object-cover"
-                  />
+                <img
+  src={
+    meal.image
+      ? `${IMAGE_BASE_URL}${meal.image}`
+      : `${IMAGE_BASE_URL}/uploads/default-food.jpg`
+  }
+  alt={meal.name}
+  className="w-16 h-16 rounded-xl object-cover"
+  onError={(e) => {
+    console.log("Failed image:", `${IMAGE_BASE_URL}${meal.image}`);
+    e.currentTarget.src =
+      "https://via.placeholder.com/64?text=Food";
+  }}
+/>
                 </td>
 
 

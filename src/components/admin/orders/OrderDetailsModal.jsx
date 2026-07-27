@@ -2,6 +2,8 @@
 import { X, MapPin, Phone, Mail, Calendar } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 
+const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
+
 const OrderDetailsModal = ({ open, order, onClose }) => {
   if (!open || !order) return null;
 
@@ -132,17 +134,11 @@ const OrderDetailsModal = ({ open, order, onClose }) => {
                 key={item._id}
                 className="border rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-center"
               >
-
-                <img
-                  src={
-                    item.menuItem?.image
-                      ? `http://localhost:5000${item.menuItem.image}`
-                      : "/placeholder-food.png"
-                  }
-                  alt={item.menuItem?.name}
-                  className="w-24 h-24 rounded-2xl object-cover"
-                />
-
+<img
+  src={`${IMAGE_BASE_URL}${item.menuItem.image}`}
+  alt={item.menuItem?.name}
+  className="w-24 h-24 rounded-2xl object-cover"
+/>
                 <div className="flex-1">
 
                   <h4 className="font-bold text-lg">
