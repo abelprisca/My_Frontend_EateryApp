@@ -25,7 +25,6 @@ https://my-backend-eateryapp.onrender.com/
 ### API Documentation
 
 https://your-api-documentation-link(Later)
-
 ---
 
 ## Technology Stack
@@ -68,6 +67,11 @@ https://your-api-documentation-link(Later)
 - Manage Customer Orders
 - Update Order Status
 
+- ### Deployment
+- mogodb Atlas
+- vercel
+- Reander
+  
 ---
 
 ## Installation and Local Setup
