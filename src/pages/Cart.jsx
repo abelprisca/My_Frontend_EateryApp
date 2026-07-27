@@ -482,6 +482,8 @@ const Cart = () => {
 
                         <div className="flex gap-4">
 
+console.log("IMAGE:", item.image);
+console.log("FULL URL:", `${IMAGE_BASE_URL}${item.image}`);
                           <img
   src={
     item.image
