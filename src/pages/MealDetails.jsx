@@ -145,6 +145,7 @@ function MealDetails() {
     }
   };
 
+const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
   // =====================================
   // LOADING STATE
   // =====================================
@@ -305,28 +306,27 @@ function MealDetails() {
           "
         >
 
-          <img
-            src={
-              imageError || !meal.image
-                ? "/default-food.jpg"
-                : `http://localhost:5000${meal.image}`
-            }
-            onError={() => setImageError(true)}
-            alt={meal.name}
-            className="
-            w-full
-            h-[550px]
-            object-contain
-            bg-gradient-to-br
-            from-orange-50
-            to-white
-            p-6
-            transition
-            duration-500
-            hover:scale-105
-            "
-          />
-
+        <img
+  src={
+    imageError || !meal.image
+      ? "/default-food.jpg"
+      : `${IMAGE_BASE_URL}${meal.image}`
+  }
+  onError={() => setImageError(true)}
+  alt={meal.name}
+  className="
+    w-full
+    h-[550px]
+    object-contain
+    bg-gradient-to-br
+    from-orange-50
+    to-white
+    p-6
+    transition
+    duration-500
+    hover:scale-105
+  "
+/>
         </motion.div>
 
         {/* =====================================
@@ -770,32 +770,26 @@ function MealDetails() {
 
               >
 
-                <img
+              
+<img
+  src={
+    item.image
+      ? `https://my-backend-eateryapp.onrender.com${item.image}`
+      : ""
+  }
+  alt={item.name}
+  className="
+    w-full
+    h-64
+    object-contain
+    bg-gray-50
+    p-5
+    hover:scale-105
+    transition
+    duration-500
+  "
+/>
 
-                  src={
-                    item.image
-                      ? `http://localhost:5000${item.image}`
-                      : "/default-food.jpg"
-                  }
-
-                  onError={(e)=>{
-                    e.target.src="/default-food.jpg";
-                  }}
-
-                  alt={item.name}
-
-                  className="
-                  w-full
-                  h-64
-                  object-contain
-                  bg-gray-50
-                  p-5
-                  hover:scale-105
-                  transition
-                  duration-500
-                  "
-
-                />
 
                 <div className="p-6">
 

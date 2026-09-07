@@ -216,18 +216,16 @@ function Checkout() {
 
                   <div className="flex gap-5">
 
-                    <img
-                      src={
-                        item.image
-                          ? `http://localhost:5000${item.image}`
-                          : "/default-food.jpg"
-                      }
-                      alt={item.name}
-                      onError={(e) => {
-                        e.target.src = "/default-food.jpg";
-                      }}
-                      className="w-32 h-32 rounded-2xl object-cover bg-gray-50"
-                    />
+                   {item.image && (
+  <img
+    src={`https://my-backend-eateryapp.onrender.com${item.image}`}
+    alt={item.name}
+    onError={(e) => {
+      e.currentTarget.style.display = "none";
+    }}
+    className="w-32 h-32 rounded-2xl object-cover bg-gray-50"
+  />
+)}
 
                     <div className="flex-1">
 
