@@ -174,20 +174,18 @@ const MenuTable = ({
               >
 
               <td className="px-6 py-4">
+ {console.log("meal.image:", meal.image)}
+
+{meal.image && (
   <img
-    src={
-      meal.image
-        ? meal.image.startsWith("http")
-          ? meal.image.replace("http://localhost:5000", IMAGE_BASE_URL)
-          : `${IMAGE_BASE_URL}${meal.image}`
-        : "/default-food.jpg"
-    }
-    alt={meal.name || "Food"}
-    className="w-16 h-16 rounded-xl object-cover"
+    src={`${IMAGE_BASE_URL}${meal.image}`}
+    alt={meal.name}
+    className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
     onError={(e) => {
-      e.currentTarget.src = "/default-food.jpg";
+      e.currentTarget.style.display = "none";
     }}
   />
+)}
 </td>
 
                 <td className="px-6 py-4">
