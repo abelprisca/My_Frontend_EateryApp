@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import useCart from "../hooks/useCart";
 import EmptyState from "../components/ui/EmptyState";
-const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
 const Cart = () => {
   const {
     cartItems,
@@ -199,13 +199,15 @@ const Cart = () => {
 
                         <div className="md:w-60 h-52 bg-gray-50 overflow-hidden">
 
-                          {item.image && (
-  <img
-    src={`${IMAGE_BASE_URL}${item.image}`}
-    className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
-    alt={item.name}
-  />
-)}
+                          <img
+                            src={getImageUrl(item.image)}
+                            className="w-full h-full object-cover rounded-2xl bg-gray-50"
+                            alt={item.name}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                            }}
+                          />
                         </div>
 
                         {/* DETAILS */}
@@ -477,13 +479,15 @@ const Cart = () => {
                         <div className="flex gap-4">
 
 
-                         {item.image && (
-  <img
-    src={`${IMAGE_BASE_URL}${item.image}`}
-    className="w-24 h-24 rounded-2xl object-contain bg-gray-50"
-    alt={item.name}
-  />
-)}
+                          <img
+                            src={getImageUrl(item.image)}
+                            className="w-24 h-24 rounded-2xl object-cover bg-gray-50 shrink-0"
+                            alt={item.name}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                            }}
+                          />
 
                           <div className="flex-1">
 

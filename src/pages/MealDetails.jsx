@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 
 import API from "../services/api";
 import useCart from "../hooks/useCart";
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
 
 function MealDetails() {
   const { id } = useParams();
@@ -45,6 +46,7 @@ function MealDetails() {
     try {
       setLoading(true);
       setError("");
+      setImageError(false);
 
       const response = await API.get(`/menu/${id}`);
 
@@ -144,8 +146,6 @@ function MealDetails() {
       setAdding(false);
     }
   };
-
-const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
   // =====================================
   // LOADING STATE
   // =====================================
@@ -307,26 +307,22 @@ const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
         >
 
         <img
-  src={
-    imageError || !meal.image
-      ? "/default-food.jpg"
-      : `${IMAGE_BASE_URL}${meal.image}`
-  }
-  onError={() => setImageError(true)}
-  alt={meal.name}
-  className="
-    w-full
-    h-[550px]
-    object-contain
-    bg-gradient-to-br
-    from-orange-50
-    to-white
-    p-6
-    transition
-    duration-500
-    hover:scale-105
-  "
-/>
+          src={imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(meal.image)}
+          onError={() => setImageError(true)}
+          alt={meal.name}
+          className="
+            w-full
+            h-[550px]
+            object-contain
+            bg-gradient-to-br
+            from-orange-50
+            to-white
+            p-6
+            transition
+            duration-500
+            hover:scale-105
+          "
+        />
         </motion.div>
 
         {/* =====================================
@@ -772,12 +768,12 @@ const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
 
               
 <img
-  src={
-    item.image
-      ? `https://my-backend-eateryapp.onrender.com${item.image}`
-      : ""
-  }
+  src={getImageUrl(item.image)}
   alt={item.name}
+  onError={(e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+  }}
   className="
     w-full
     h-64

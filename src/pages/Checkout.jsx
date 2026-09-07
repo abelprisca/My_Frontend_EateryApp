@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import API from "../services/api";
 import useCart from "../hooks/useCart";
 import useAuth from "../hooks/useAuth";
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
 
 function Checkout() {
   const navigate = useNavigate();
@@ -216,16 +217,15 @@ function Checkout() {
 
                   <div className="flex gap-5">
 
-                   {item.image && (
-  <img
-    src={`https://my-backend-eateryapp.onrender.com${item.image}`}
-    alt={item.name}
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-    className="w-32 h-32 rounded-2xl object-cover bg-gray-50"
-  />
-)}
+                  <img
+                    src={getImageUrl(item.image)}
+                    alt={item.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                    }}
+                    className="w-32 h-32 rounded-2xl object-cover bg-gray-50 shrink-0"
+                  />
 
                     <div className="flex-1">
 

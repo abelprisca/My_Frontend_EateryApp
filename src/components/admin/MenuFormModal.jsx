@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 import API from "../../services/api";
+import { getImageUrl } from "../../utils/imageUrl";
 
 
 const categories = [
@@ -83,15 +84,9 @@ const MenuFormModal = ({
 
 
       if (meal.image) {
-
-        setPreview(
-
-          meal.image.startsWith("http")
-            ? meal.image
-            : `${import.meta.env.VITE_API_URL}/${meal.image}`
-
-        );
-
+        setPreview(getImageUrl(meal.image));
+      } else {
+        setPreview("");
       }
 
 

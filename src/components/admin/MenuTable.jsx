@@ -9,6 +9,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../../utils/imageUrl";
+
 const categories = [
   "All",
   "Appetizers",
@@ -24,7 +26,6 @@ const categories = [
 ];
 
 const ITEMS_PER_PAGE = 8;
-const IMAGE_BASE_URL = "https://my-backend-eateryapp.onrender.com";
 
 
 
@@ -174,19 +175,18 @@ const MenuTable = ({
               >
 
               <td className="px-6 py-4">
- {console.log("meal.image:", meal.image)}
-
-{meal.image && (
-  <img
-    src={`${IMAGE_BASE_URL}${meal.image}`}
-    alt={meal.name}
-    className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-  />
-)}
-</td>
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 border flex items-center justify-center shrink-0">
+                  <img
+                    src={getImageUrl(meal.image)}
+                    alt={meal.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+                    }}
+                  />
+                </div>
+              </td>
 
                 <td className="px-6 py-4">
 
