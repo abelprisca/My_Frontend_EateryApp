@@ -176,7 +176,7 @@ function Home() {
           </p>
 
           <Link to="/menu">
-            <button className="bg-white text-red-500 px-10 py-4 rounded-xl font-bold mt-10 hover:scale-105 transition">
+            <button className="bg-white text-green-500 px-10 py-4 rounded-xl font-bold mt-10 hover:scale-105 transition">
               Browse Menu
             </button>
           </Link>
