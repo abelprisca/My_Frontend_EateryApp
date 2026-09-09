@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Search,
-  Bell,
   Sun,
   Moon,
 } from "lucide-react";
@@ -99,36 +98,6 @@ const TopNavbar = () => {
               "
             />
           </div>
-
-          {/* Notification */}
-
-          <button
-            className="
-            relative
-            h-12
-            w-12
-            rounded-2xl
-            bg-gray-100
-            dark:bg-gray-800
-            hover:bg-red-500
-            hover:text-white
-            transition-all
-          "
-          >
-            <Bell className="mx-auto" />
-
-            <span
-              className="
-              absolute
-              top-2
-              right-2
-              h-2.5
-              w-2.5
-              rounded-full
-              bg-red-500
-            "
-            />
-          </button>
 
           {/* Theme Toggle */}
 

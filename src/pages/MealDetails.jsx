@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import API from "../services/api";
 import useCart from "../hooks/useCart";
 import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
+import { getDietaryTags } from "../utils/dietary";
 
 function MealDetails() {
   const { id } = useParams();
@@ -132,12 +133,14 @@ function MealDetails() {
     try {
       setAdding(true);
 
-      addToCart({
+      const added = addToCart({
         ...meal,
         quantity,
       });
 
-      toast.success("Added to cart successfully!");
+      if (added) {
+        toast.success("Added to cart successfully!");
+      }
     } catch (err) {
       console.log(err);
 
@@ -431,44 +434,39 @@ function MealDetails() {
 
           {/* Dietary */}
 
-          {meal.isDietary?.length > 0 && (
-
-            <div className="mt-8">
-
-              <h3 className="font-bold text-gray-800 mb-3">
-                Dietary Information
-              </h3>
-
-              <div className="flex flex-wrap gap-3">
-
-                {meal.isDietary.map((diet,index)=>(
-
-                  <span
-                    key={index}
-                    className="
-                    flex
-                    items-center
-                    gap-2
-                    bg-emerald-100
-                    text-emerald-700
-                    px-4
-                    py-2
-                    rounded-full
-                    text-sm
-                    font-semibold
-                    "
-                  >
-                    <Tag size={15} />
-                    {diet}
-                  </span>
-
-                ))}
-
+          {(() => {
+            const dietaryTags = getDietaryTags(meal.isDietary);
+            if (dietaryTags.length === 0) return null;
+            return (
+              <div className="mt-8">
+                <h3 className="font-bold text-gray-800 mb-3">
+                  Dietary Information
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {dietaryTags.map((diet, index) => (
+                    <span
+                      key={index}
+                      className="
+                      flex
+                      items-center
+                      gap-2
+                      bg-emerald-100
+                      text-emerald-700
+                      px-4
+                      py-2
+                      rounded-full
+                      text-sm
+                      font-semibold
+                      "
+                    >
+                      <Sparkles size={16} />
+                      {diet}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-            </div>
-
-          )}
+            );
+          })()}
 
           {/* Price */}
 
@@ -848,17 +846,13 @@ function MealDetails() {
                       disabled={!item.isAvailable}
 
                       onClick={()=>{
-
-                        addToCart({
-
+                        const added = addToCart({
                           ...item,
-
                           quantity:1,
-
                         });
-
-                        toast.success("Added to cart");
-
+                        if (added) {
+                          toast.success("Added to cart");
+                        }
                       }}
 
                       className="

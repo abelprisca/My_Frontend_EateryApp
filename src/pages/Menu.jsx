@@ -14,6 +14,8 @@ import useCart from "../hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
+import { getDietaryTags } from "../utils/dietary";
+import toast from "react-hot-toast";
 
 function CustomerMenu() {
   const { addToCart } = useCart();
@@ -28,14 +30,14 @@ function CustomerMenu() {
   // Category
   const [category, setCategory] = useState("All");
 
-  // Availability
-  const [availability, setAvailability] = useState("All");
-
   // Dietary
   const [dietary, setDietary] = useState("All");
 
+  // Availability
+  const [availability, setAvailability] = useState("All");
+
   // Sort
-  const [sortBy, setSortBy] = useState("Newest");
+  const [sortBy, setSortBy] = useState("default");
 
   // Price
   const [priceRange, setPriceRange] = useState(10000);
@@ -45,12 +47,12 @@ function CustomerMenu() {
   // ===============================
 
   useEffect(() => {
-    const fetchMenu = async () => {
+    const fetchMeals = async () => {
       try {
-        const response = await API.get("/menu");
+        setLoading(true);
+        const { data } = await API.get("/menu");
 
-        const items = response.data.data.menuItems;
-
+        const items = data.data.menuItems || [];
         setMeals(items);
 
         if (items.length > 0) {
@@ -60,15 +62,16 @@ function CustomerMenu() {
 
           setPriceRange(highestPrice);
         }
+        setError("");
       } catch (err) {
         console.log(err);
-        setError("Unable to load menu.");
+        setError("Failed to fetch menu items");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMenu();
+    fetchMeals();
   }, []);
 
   // ===============================
@@ -89,7 +92,7 @@ function CustomerMenu() {
   // ===============================
 
   const dietaryOptions = useMemo(() => {
-    const tags = meals.flatMap((item) => item.isDietary);
+    const tags = meals.flatMap((item) => getDietaryTags(item.isDietary));
 
     return ["All", ...new Set(tags)];
   }, [meals]);
@@ -104,6 +107,7 @@ function CustomerMenu() {
     // Search
 
     data = data.filter((meal) => {
+      const mealTags = getDietaryTags(meal.isDietary);
       return (
         meal.name.toLowerCase().includes(search.toLowerCase()) ||
         meal.description
@@ -112,7 +116,7 @@ function CustomerMenu() {
         meal.category
           .toLowerCase()
           .includes(search.toLowerCase()) ||
-        meal.isDietary
+        mealTags
           .join(" ")
           .toLowerCase()
           .includes(search.toLowerCase())
@@ -130,9 +134,10 @@ function CustomerMenu() {
     // Dietary
 
     if (dietary !== "All") {
-      data = data.filter((meal) =>
-        meal.isDietary.includes(dietary)
-      );
+      data = data.filter((meal) => {
+        const mealTags = getDietaryTags(meal.isDietary);
+        return mealTags.includes(dietary);
+      });
     }
 
     // Availability
@@ -563,35 +568,23 @@ function CustomerMenu() {
                   {/* DIETARY */}
 
                   <div className="flex flex-wrap gap-2 mt-6">
-
-                    {meal.isDietary.length > 0 ? (
-
-                      meal.isDietary.map((item) => (
-
-                        <span
-
-                          key={item}
-
-                          className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-semibold"
-
-                        >
-
-                          {item}
-
+                    {(() => {
+                      const tags = getDietaryTags(meal.isDietary);
+                      return tags.length > 0 ? (
+                        tags.map((item) => (
+                          <span
+                            key={item}
+                            className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-semibold"
+                          >
+                            {item}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">
+                          Standard Meal
                         </span>
-
-                      ))
-
-                    ) : (
-
-                      <span className="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">
-
-                        No Dietary Tag
-
-                      </span>
-
-                    )}
-
+                      );
+                    })()}
                   </div>
 
                   {/* BUTTONS */}
@@ -609,7 +602,12 @@ function CustomerMenu() {
 
                       disabled={!meal.isAvailable}
 
-                      onClick={() => addToCart(meal)}
+                      onClick={() => {
+                        const added = addToCart(meal);
+                        if (added) {
+                          toast.success("Added to cart successfully!");
+                        }
+                      }}
 
                       className={`flex-1 py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition
 

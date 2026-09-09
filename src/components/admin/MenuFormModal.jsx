@@ -154,133 +154,50 @@ const MenuFormModal = ({
 
 
   const handleImage = (e) => {
-
-
-    const file =
-      e.target.files[0];
-
-
+    const file = e.target.files[0];
     if (!file) return;
 
-
-
-    setImage(file);
-
-
-    setPreview(
-      URL.createObjectURL(file)
-    );
-
-
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setImage(base64String);
+      setPreview(base64String);
+    };
+    reader.readAsDataURL(file);
   };
 
-
-
-
-
-
-
   const handleSubmit = async (e) => {
-
-
     e.preventDefault();
 
-
-
     try {
-
-
       setLoading(true);
 
-
-
-      const formData =
-        new FormData();
-
-
-
-      formData.append(
-        "name",
-        form.name
-      );
-
-
-      formData.append(
-        "description",
-        form.description
-      );
-
-
-      formData.append(
-        "price",
-        form.price
-      );
-
-
-      formData.append(
-        "category",
-        form.category
-      );
-
-
-      formData.append(
-        "isDietary",
-        form.isDietary
-      );
-
-
-      formData.append(
-        "isAvailable",
-        form.isAvailable
-      );
-
-
-
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("price", form.price);
+      formData.append("category", form.category);
+      formData.append("isDietary", form.isDietary);
+      formData.append("isAvailable", form.isAvailable);
 
       if (image) {
-
-        formData.append(
-          "image",
-          image
-        );
-
+        formData.append("image", image);
       }
 
       if (meal) {
-
-
-       await API.patch(`/menu/${meal._id}`, formData, {
-  headers: {
-    "Content-Type": "multipart/form-data",
-  },
-});
-
-        toast.success(
-          "Meal updated successfully"
-        );
-
+        await API.patch(`/menu/${meal._id}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        toast.success("Meal updated successfully");
       } else {
-
-
-
-        await API.post(
-          "/menu",
-          formData,
-          {
-            headers: {
-              "Content-Type":
-                "multipart/form-data",
-            },
-          }
-        );
-
-
-
-        toast.success(
-          "Meal created successfully"
-        );
-
-
+        await API.post("/menu", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        toast.success("Meal created successfully");
       }
 
 

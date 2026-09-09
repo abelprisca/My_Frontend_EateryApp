@@ -35,7 +35,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = (meal, quantity = 1) => {
     if (!isAuthenticated) {
       setLoginPromptOpen(true);
-      return;
+      return false;
     }
 
     setCartItems((prev) => {
@@ -63,6 +63,8 @@ export const CartProvider = ({ children }) => {
         },
       ];
     });
+
+    return true;
   };
 
   // ======================
