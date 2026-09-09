@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../../utils/imageUrl";
+import { getImageUrl, handleImageError, DEFAULT_FALLBACK_IMAGE } from "../../utils/imageUrl";
 
 const categories = [
   "All",
@@ -177,13 +177,10 @@ const MenuTable = ({
               <td className="px-6 py-4">
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 border flex items-center justify-center shrink-0">
                   <img
-                    src={getImageUrl(meal.image)}
+                    src={getImageUrl(meal)}
                     alt={meal.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
-                    }}
+                    onError={(e) => handleImageError(e, meal._id || meal.name)}
                   />
                 </div>
               </td>

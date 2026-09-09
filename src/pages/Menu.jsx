@@ -13,7 +13,7 @@ import API from "../services/api";
 import useCart from "../hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { getImageUrl, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
+import { getImageUrl, handleImageError, DEFAULT_FALLBACK_IMAGE } from "../utils/imageUrl";
 import { getDietaryTags } from "../utils/dietary";
 import toast from "react-hot-toast";
 
@@ -476,13 +476,10 @@ function CustomerMenu() {
                 <div className="relative h-72 bg-gradient-to-br from-pink-50 via-orange-50 to-white overflow-hidden">
 
                 <img
-                  src={getImageUrl(meal.image)}
+                  src={getImageUrl(meal)}
                   alt={meal.name}
                   className="w-full h-full object-contain p-5 transition duration-700 group-hover:scale-110"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
-                  }}
+                  onError={(e) => handleImageError(e, meal._id || meal.name)}
                 />
 
                   {/* CATEGORY */}

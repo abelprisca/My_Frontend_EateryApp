@@ -45,122 +45,62 @@ const MenuFormModal = ({
 
 
 
-  const [image, setImage] =
-    useState(null);
-
-
-
-  const [preview, setPreview] =
-    useState("");
-
-
-
+  const [imageFile, setImageFile] = useState(null);
+  const [base64Image, setBase64Image] = useState("");
+  const [preview, setPreview] = useState("");
 
   useEffect(() => {
-
     if (meal) {
-
       setForm({
-
         name: meal.name || "",
-
-        description:
-          meal.description || "",
-
-        price:
-          meal.price || "",
-
-        category:
-          meal.category || "Mains",
-
-        isDietary:
-          meal.isDietary ?? false,
-
-        isAvailable:
-          meal.isAvailable ?? true,
-
+        description: meal.description || "",
+        price: meal.price || "",
+        category: meal.category || "Mains",
+        isDietary: meal.isDietary ?? false,
+        isAvailable: meal.isAvailable ?? true,
       });
 
-
-
       if (meal.image) {
-        setPreview(getImageUrl(meal.image));
+        setPreview(getImageUrl(meal));
       } else {
         setPreview("");
       }
-
-
+      setImageFile(null);
+      setBase64Image("");
     } else {
-
-
       setForm({
-
         name: "",
         description: "",
         price: "",
         category: "Mains",
         isDietary: false,
         isAvailable: true,
-
       });
 
-
-      setImage(null);
-
+      setImageFile(null);
+      setBase64Image("");
       setPreview("");
-
     }
-
-
   }, [meal, open]);
 
-
-
-
-
-
-
-
   const handleChange = (e) => {
-
-
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = e.target;
-
-
-
+    const { name, value, type, checked } = e.target;
     setForm((prev) => ({
-
       ...prev,
-
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-
+      [name]: type === "checkbox" ? checked : value,
     }));
-
-
   };
-
-
-
-
-
-
 
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    setImageFile(file);
+
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result;
-      setImage(base64String);
+      setBase64Image(base64String);
       setPreview(base64String);
     };
     reader.readAsDataURL(file);
@@ -180,19 +120,27 @@ const MenuFormModal = ({
       formData.append("isDietary", form.isDietary);
       formData.append("isAvailable", form.isAvailable);
 
-      if (image) {
-        formData.append("image", image);
+      // Append actual File object if present so backend multer receives req.file!
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (base64Image) {
+        formData.append("image", base64Image);
       }
 
+      if (base64Image) {
+        formData.append("imageBase64", base64Image);
+      }
+
+      let res;
       if (meal) {
-        await API.patch(`/menu/${meal._id}`, formData, {
+        res = await API.patch(`/menu/${meal._id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
         toast.success("Meal updated successfully");
       } else {
-        await API.post("/menu", formData, {
+        res = await API.post("/menu", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -200,50 +148,29 @@ const MenuFormModal = ({
         toast.success("Meal created successfully");
       }
 
-
-
-
-
+      // Cache base64 image locally so client never loses original upload image
+      const createdItem = res?.data?.data?.meal || res?.data?.data?.menuItem || res?.data?.data || {};
+      const mealId = createdItem._id || meal?._id;
+      if (base64Image && typeof window !== "undefined") {
+        if (mealId) {
+          localStorage.setItem(`eatery_img_${mealId}`, base64Image);
+        }
+        if (form.name) {
+          localStorage.setItem(`eatery_img_${form.name.trim()}`, base64Image);
+        }
+      }
 
       refreshMenu();
-
-
       onClose();
-
-
-
-
     } catch (error) {
-
-
       console.log(error);
-
-
       toast.error(
-
-        error.response?.data?.message ||
-        "Something went wrong"
-
+        error.response?.data?.message || "Something went wrong"
       );
-
-
-
     } finally {
-
-
       setLoading(false);
-
-
     }
-
-
   };
-
-
-
-
-
-
 
   if (!open) return null;
 

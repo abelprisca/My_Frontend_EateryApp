@@ -21,7 +21,33 @@ export const getBackendBaseUrl = () => {
   return apiUrl.replace(/\/+$/, "");
 };
 
-export const getImageUrl = (imagePath) => {
+/**
+ * Resolves complete image URL for display.
+ * Checks local storage cache for uploaded base64 images if available.
+ *
+ * @param {string|object} imageInput - Image path string or meal object
+ * @param {string} [identifier] - Optional meal ID or name
+ * @returns {string} Resolved image URL or Base64 Data URL
+ */
+export const getImageUrl = (imageInput, identifier = "") => {
+  let imagePath = "";
+  let idKey = identifier;
+
+  if (imageInput && typeof imageInput === "object") {
+    imagePath = imageInput.image || "";
+    idKey = imageInput._id || imageInput.id || imageInput.name || identifier;
+  } else if (typeof imageInput === "string") {
+    imagePath = imageInput;
+  }
+
+  // Check localStorage for client-side uploaded base64 cache
+  if (typeof window !== "undefined" && idKey) {
+    const cached = localStorage.getItem(`eatery_img_${idKey}`);
+    if (cached && cached.startsWith("data:image")) {
+      return cached;
+    }
+  }
+
   if (!imagePath || typeof imagePath !== "string") {
     return DEFAULT_FALLBACK_IMAGE;
   }
@@ -55,6 +81,20 @@ export const getImageUrl = (imagePath) => {
 
   const baseUrl = getBackendBaseUrl();
   return `${baseUrl}${cleanPath}`;
+};
+
+export const handleImageError = (e, identifier = "") => {
+  if (e && e.currentTarget) {
+    e.currentTarget.onerror = null;
+    if (identifier && typeof window !== "undefined") {
+      const cached = localStorage.getItem(`eatery_img_${identifier}`);
+      if (cached && cached.startsWith("data:image")) {
+        e.currentTarget.src = cached;
+        return;
+      }
+    }
+    e.currentTarget.src = DEFAULT_FALLBACK_IMAGE;
+  }
 };
 
 export default getImageUrl;

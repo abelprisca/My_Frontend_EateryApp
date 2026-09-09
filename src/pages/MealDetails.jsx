@@ -310,7 +310,7 @@ function MealDetails() {
         >
 
         <img
-          src={imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(meal.image)}
+          src={imageError ? DEFAULT_FALLBACK_IMAGE : getImageUrl(meal)}
           onError={() => setImageError(true)}
           alt={meal.name}
           className="
